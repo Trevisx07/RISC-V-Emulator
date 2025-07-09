@@ -1,0 +1,18 @@
+@model List<RiscVEmulator.Models.ProgramRecord>
+@{
+    ViewData["Title"] = "Program History";
+}
+
+<h1>Program History</h1>
+<ul>
+    @foreach (var program in Model)
+    {
+        <li>@program.CreatedAt: <pre>@program.Code</pre></li>
+    }
+</ul>
+<a href="@Url.Action("Index")">Back to Emulator</a>
+
+<style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    pre { font-family: monospace; }
+</style>

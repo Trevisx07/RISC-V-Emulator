@@ -1,0 +1,90 @@
+@model RiscVEmulator.Models.EmulatorViewModel
+@{
+    ViewData["Title"] = "RISC-V Emulator";
+}
+
+<!-- Top Bar -->
+<header class="vscode-topbar">
+    <div class="container">
+        <h1>RISC-V Emulator</h1>
+        <nav>
+            <a href="@Url.Action("Index")">File</a>
+            <a href="#tools">Tools</a>
+            <a href="#docs">Help</a>
+            <a href="@Url.Action("History")">History</a>
+        </nav>
+    </div>
+</header>
+
+<!-- Main Content -->
+<main class="vscode-main">
+    <div class="container">
+        <!-- Editor Section -->
+        <div class="editor-section">
+            <div class="toolbar">
+                <select id="instructionDropdown" class="instruction-select">
+                    <option value="">Instruction Reference</option>
+                    @if (ViewBag.InstructionSet != null)
+                    {
+                        foreach (var instruction in ViewBag.InstructionSet as Dictionary<string, string>)
+                        {
+                            <option value="@instruction.Key">@instruction.Value</option>
+                        }
+                    }
+                </select>
+                <div class="button-group">
+                    <button type="submit" form="codeForm" class="vscode-btn vscode-btn-primary">Run</button>
+                    <button type="submit" form="codeForm" formaction="@Url.Action("Step")" class="vscode-btn vscode-btn-secondary">Step</button>
+                    <a href="@Url.Action("Index")" class="vscode-btn vscode-btn-outline">Reset</a>
+                </div>
+            </div>
+            <form id="codeForm" asp-action="Run" method="post">
+                <textarea asp-for="Program.Code" class="code-editor" placeholder="Enter RISC-V assembly code..."></textarea>
+            </form>
+            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <div class="alert alert-danger" role="alert">
+                    <strong>Error:</strong> <pre>@Model.ErrorMessage</pre>
+                </div>
+            }
+        </div>
+
+        <!-- Output Section -->
+        <div class="output-section">
+            <div class="output-grid">
+                <div class="output-pane">
+                    <h4>Registers</h4>
+                    <pre class="output-pre">@string.Join("\n", Enumerable.Range(0, 32).Select(i => $"x{i}: 0x{Model.Registers[i].ToString("x8")}"))</pre>
+                </div>
+                <div class="output-pane">
+                    <h4>Memory (0x1000-0x1010)</h4>
+                    <pre class="output-pre">@string.Join("\n", Model.Memory.Select((val, i) => $"0x{(0x1000 + i).ToString("x4")}: 0x{val.ToString("x2")}"))</pre>
+                </div>
+                <div class="output-pane">
+                    <h4>Program Counter</h4>
+                    <pre class="output-pre">0x@(Model.Pc.ToString("x4"))</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Error Pop-up -->
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <script>
+        window.onload = function() {
+            alert("@Html.Raw(Model.ErrorMessage.Replace("\n", "\\n"))");
+        };
+    </script>
+}
+
+<!-- Styles -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="~/css/vscode-style.css" rel="stylesheet" asp-append-version="true" />
+<script>
+    // Fade-In Animation
+    window.addEventListener('load', () => {
+        document.querySelector('.vscode-main').classList.add('fade-in');
+    });
+</script>
